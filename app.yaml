@@ -1,0 +1,2 @@
+runtime:python39
+entry:guincorn -b:$PORT main:app
