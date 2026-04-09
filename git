@@ -1,0 +1,13 @@
+mkdir myproject
+cd myproject
+
+echo "Hello World" > hello.txt
+git init
+git add hello.txt
+git commit -m "first commit"
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+git commit -m "first commit"
+git remote add origin https://github.com/your-username/myproject.git
+git branch -M main
+git push -u origin main
