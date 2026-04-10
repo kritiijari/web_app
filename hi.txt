@@ -1,0 +1,39 @@
+import org.cloudbus.cloudsim.*;
+import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.provisioners.*;
+import java.util.*;
+public class FCFS_Short {
+    public static void main(String[] args) {
+        try {
+            CloudSim.init(1, Calendar.getInstance(), false);
+            List<Host> hosts = List.of(
+                new Host(0,
+                    new RamProvisionerSimple(2048),
+                    new BwProvisionerSimple(10000),
+                    1000000,
+                    List.of(new Pe(0, new PeProvisionerSimple(1000))),
+                    new VmSchedulerTimeShared(List.of(new Pe(0, new PeProvisionerSimple(1000))))
+                )
+            );
+            Datacenter dc = new Datacenter("DC",
+                new DatacenterCharacteristics("x86","Linux","Xen",hosts,10,3,0.05,0.1,0.1),
+                new VmAllocationPolicySimple(hosts), new LinkedList<>(), 0);
+            DatacenterBroker broker = new DatacenterBroker("Broker");
+            Vm vm = new Vm(0, broker.getId(), 1000, 1, 512, 1000, 10000, "Xen",
+                    new CloudletSchedulerSpaceShared()); // FCFS
+            broker.submitVmList(List.of(vm));
+            UtilizationModel m = new UtilizationModelFull();
+            List<Cloudlet> tasks = List.of(
+                new Cloudlet(0, 40000, 1, 300, 300, m, m, m),
+                new Cloudlet(1, 10000, 1, 300, 300, m, m, m)
+            );
+            tasks.forEach(t -> t.setUserId(broker.getId()));
+            broker.submitCloudletList(tasks);
+            CloudSim.startSimulation();
+            CloudSim.stopSimulation();
+            broker.getCloudletReceivedList().forEach(c ->
+                System.out.println(c.getCloudletId() + " -> " + c.getFinishTime())
+            );
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+}
